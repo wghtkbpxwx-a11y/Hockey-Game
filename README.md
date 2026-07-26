@@ -7,16 +7,31 @@ with everything rendered and synthesised in code.
 
 Plays with a keyboard, a gamepad, or your thumbs on an iPhone.
 
-**Play it:** open `index.html` in any modern browser. No build step, no
-install, no network — it runs straight off the filesystem.
+## Play it
+
+Three ways, all of them offline-capable:
+
+**1 — Clone and open.** No build step, no install, no network.
 
 ```
 git clone <this repo> && cd Hockey-Game
 open index.html          # macOS   (or: xdg-open index.html / just double-click)
 ```
 
-If you'd rather serve it: `npx http-server -p 8080` then visit
-`http://localhost:8080`.
+**2 — One file.** `dist/slapshot.html` is the whole game — markup, styles and
+all six scripts inlined — in a single ~210 KB document. Download it, mail it,
+put it on a USB stick, open it on a plane. Regenerate with:
+
+```
+node build.js               # -> dist/slapshot.html
+node build.js --fragment    # body-only, for hosts that supply their own <head>
+```
+
+**3 — Serve it.** `npx http-server -p 8080`, then `http://localhost:8080`.
+
+To play on an iPhone, put the file (or the served URL) on the phone, open it
+in Safari in landscape, and optionally **Share → Add to Home Screen** for a
+full-screen launch with no browser chrome.
 
 ---
 
