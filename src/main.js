@@ -2,7 +2,10 @@
  * MAIN — screens, camera, HUD, and the game loop.
  * ==========================================================================*/
 
-const VIEW_W = 1600, VIEW_H = 900;
+// Logical canvas. On a phone we shrink it so the HUD occupies a larger share
+// of the screen; VIEW_FIT rescales the camera so world coverage is identical
+// on every device.
+let VIEW_W = 1600, VIEW_H = 900, VIEW_FIT = 1;
 
 const Game = {
   canvas: null,
@@ -27,6 +30,9 @@ const Game = {
     away: 1,
   },
   sel: { side: 0, home: 0, away: 1 },
+  eraFilter: 'all',
+  armed: null,
+  touchMode: false,
   flash: 0,
 };
 
@@ -44,6 +50,8 @@ function boot() {
   resize();
   addEventListener('resize', resize);
 
+  TOUCH.mount();
+  Game.touchMode = IS_TOUCH;
   buildTeamGrid();
   bindUI();
   startDemo();
@@ -52,9 +60,12 @@ function boot() {
   Game.last = performance.now();
   requestAnimationFrame(frame);
 
+  // iOS will not start an AudioContext outside a user gesture.
   const wake = () => { SFX.resume(); SFX.setVolume(Game.settings.volume); };
   addEventListener('pointerdown', wake, { once: true });
+  addEventListener('touchend', wake, { once: true });
   addEventListener('keydown', wake, { once: true });
+  addEventListener('orientationchange', () => setTimeout(resize, 250));
 }
 
 function loadSettings() {
@@ -75,9 +86,15 @@ function resize() {
   const cv = Game.canvas;
   const dpr = Math.min(devicePixelRatio || 1, 2);
   const rect = cv.getBoundingClientRect();
-  const w = Math.max(320, rect.width), h = Math.max(180, rect.height);
-  cv.width = Math.round(w * dpr);
-  cv.height = Math.round(h * dpr);
+  const cssW = Math.max(320, rect.width), cssH = Math.max(200, rect.height);
+  const aspect = cssW / cssH;
+
+  VIEW_W = Math.round(clamp(cssW * 1.35, 1040, 1700));
+  VIEW_H = Math.round(VIEW_W / aspect);
+  VIEW_FIT = VIEW_W / 1600;
+
+  cv.width = Math.round(cssW * dpr);
+  cv.height = Math.round(cssH * dpr);
   Game.scale = Math.min(cv.width / VIEW_W, cv.height / VIEW_H);
   Game.offX = (cv.width - VIEW_W * Game.scale) / 2;
   Game.offY = (cv.height - VIEW_H * Game.scale) / 2;
@@ -91,6 +108,8 @@ function showScreen(name) {
     el.classList.toggle('active', el.id === 'scr-' + name);
   }
   document.getElementById('overlay').classList.toggle('hidden', name === 'play');
+  document.querySelector('.legal').classList.toggle('hidden', name === 'play');
+  TOUCH.setVisible(Game.touchMode && name === 'play');
   if (name === 'select') refreshSelect();
 }
 
@@ -147,6 +166,12 @@ function teamTile(t, i) {
   ovr.className = 'tile-ovr';
   ovr.textContent = teamRating(t);
   el.appendChild(ovr);
+  if (t.era === 'legend') {
+    const era = document.createElement('div');
+    era.className = 'tile-era';
+    era.textContent = 'LEGENDS';
+    el.appendChild(era);
+  }
   return el;
 }
 
@@ -154,11 +179,39 @@ function buildTeamGrid() {
   const grid = document.getElementById('team-grid');
   grid.innerHTML = '';
   TEAMS.forEach((t, i) => {
+    if (Game.eraFilter !== 'all' && t.era !== Game.eraFilter) return;
     const el = teamTile(t, i);
-    el.addEventListener('mouseenter', () => { previewTeam(i); SFX.uiMove(); });
+    el.addEventListener('mouseenter', () => { if (!IS_TOUCH) previewTeam(i); });
     el.addEventListener('focus', () => previewTeam(i));
-    el.addEventListener('click', () => chooseTeam(i));
+    el.addEventListener('click', () => tapTeam(i));
     grid.appendChild(el);
+  });
+}
+
+/**
+ * First tap previews and arms a club, a second tap (or CONFIRM) commits.
+ * Touch devices have no hover, so previewing has to be an explicit tap.
+ */
+function tapTeam(i) {
+  if (Game.armed === i) { chooseTeam(i); return; }
+  Game.armed = i;
+  previewTeam(i);
+  SFX.uiMove();
+  markArmed();
+}
+
+/** Indices of the clubs the current era tab is showing. */
+function visibleTeamIndices() {
+  const out = [];
+  TEAMS.forEach((t, i) => {
+    if (Game.eraFilter === 'all' || t.era === Game.eraFilter) out.push(i);
+  });
+  return out;
+}
+
+function markArmed() {
+  document.querySelectorAll('#team-grid .tile').forEach((el) => {
+    el.classList.toggle('armed', Number(el.dataset.index) === Game.armed);
   });
 }
 
@@ -173,7 +226,7 @@ function previewTeam(i) {
     <div class="detail-head" style="--c1:${t.colors.primary};--c2:${t.colors.secondary}">
       <canvas class="detail-crest" width="128" height="128"></canvas>
       <div>
-        <h3>${t.city}</h3>
+        <h3>${t.city}${t.era === 'legend' ? ' · LEGENDS' : ''}</h3>
         <h2>${t.name}</h2>
         <div class="ovr-pill">OVR ${teamRating(t)}</div>
       </div>
@@ -207,10 +260,12 @@ function chooseTeam(i) {
   if (Game.sel.side === 0) {
     Game.sel.home = i;
     Game.sel.side = 1;
+    Game.armed = null;
     if (Game.sel.away === i) Game.sel.away = (i + 1) % TEAMS.length;
   } else {
     if (i === Game.sel.home) { SFX.uiBack(); return; }
     Game.sel.away = i;
+    Game.armed = null;
     startMatch();
     Game.sel.side = 0;
     return;
@@ -223,17 +278,45 @@ function refreshSelect() {
   document.getElementById('select-prompt').innerHTML = side === 0
     ? 'CHOOSE <b>YOUR</b> CLUB'
     : `CHOOSE THE <b>OPPONENT</b> — you are <b style="color:${TEAMS[Game.sel.home].colors.primary}">${TEAMS[Game.sel.home].abbr}</b>`;
-  document.querySelectorAll('#team-grid .tile').forEach((el, i) => {
+  document.querySelectorAll('#team-grid .tile').forEach((el) => {
+    const i = Number(el.dataset.index);
     el.classList.toggle('picked', side === 1 && i === Game.sel.home);
     el.classList.toggle('disabled', side === 1 && i === Game.sel.home);
   });
-  previewTeam(side === 0 ? Game.sel.home : Game.sel.away);
+  const visible = visibleTeamIndices();
+  if (Game.armed === null || Game.armed === undefined ||
+      (side === 1 && Game.armed === Game.sel.home)) {
+    Game.armed = side === 0 ? Game.sel.home : Game.sel.away;
+  }
+  // The armed club may have been filtered out by an era tab.
+  if (!visible.includes(Game.armed)) {
+    Game.armed = visible.find((i) => !(side === 1 && i === Game.sel.home));
+  }
+  markArmed();
+  previewTeam(Game.armed);
 }
 
 function bindUI() {
   const on = (id, fn) => { const e = document.getElementById(id); if (e) e.addEventListener('click', fn); };
 
-  on('btn-start', () => { SFX.uiSelect(); Game.sel.side = 0; showScreen('select'); });
+  on('btn-start', () => { SFX.uiSelect(); Game.sel.side = 0; Game.armed = null; showScreen('select'); });
+  on('btn-confirm-team', () => {
+    if (Game.armed === null || Game.armed === undefined) return;
+    chooseTeam(Game.armed);
+  });
+  const tabs = document.getElementById('era-tabs');
+  if (tabs) {
+    tabs.addEventListener('click', (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      Game.eraFilter = b.dataset.era;
+      tabs.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+      Game.armed = null;
+      buildTeamGrid();
+      refreshSelect();
+      SFX.uiMove();
+    });
+  }
   on('btn-controls', () => { SFX.uiSelect(); showScreen('controls'); });
   on('btn-settings', () => { SFX.uiSelect(); showScreen('settings'); });
   on('btn-back-title', () => { SFX.uiBack(); showScreen('title'); });
@@ -243,7 +326,8 @@ function bindUI() {
   on('btn-newteams', () => { SFX.uiSelect(); Game.sel.side = 0; showScreen('select'); });
   on('btn-quit-menu', () => { SFX.uiBack(); Game.match = null; startDemo(); showScreen('title'); });
 
-  on('btn-resume', () => { Game.paused = false; document.getElementById('pause').classList.add('hidden'); });
+  on('btn-resume', () => togglePause(false));
+  on('tc-pause', () => togglePause(true));
   on('btn-restart', () => {
     Game.paused = false;
     document.getElementById('pause').classList.add('hidden');
@@ -312,11 +396,7 @@ function frame(now) {
   const m = playing ? Game.match : Game.demo;
 
   // Pause toggle.
-  if (playing && (Game.input.keyHit('Escape') || Game.input.keyHit('KeyP'))) {
-    Game.paused = !Game.paused;
-    document.getElementById('pause').classList.toggle('hidden', !Game.paused);
-    SFX.uiBack();
-  }
+  if (playing && (Game.input.keyHit('Escape') || Game.input.keyHit('KeyP'))) togglePause();
   if (playing && Game.match.phase === 'over' && Game.match.phaseT > 3.2) {
     showResults();
   }
@@ -353,7 +433,7 @@ function updateCamera(m, dt, playing) {
 
   if (replayLive(m)) {
     const f = m.replay.frames[Math.min(m.replay.frames.length - 1, Math.floor(m.replay.t))];
-    if (f) cam.follow(f.p.x * 0.86, f.p.y * 0.72, 1.25, dt, 4);
+    if (f) cam.follow(f.p.x * 0.86, f.p.y * 0.72, 1.25 * VIEW_FIT, dt, 4);
     cam.update(dt);
     return;
   }
@@ -372,6 +452,7 @@ function updateCamera(m, dt, playing) {
   if (m.phase === 'goal') zoom = 1.18;
   if (m.phase === 'faceoff') zoom = 0.9;
   if (!playing) zoom = 0.8;               // menus: sit back and show the arena
+  zoom *= VIEW_FIT;
 
   // Keep the view inside the arena so we never show empty space.
   const halfW = VIEW_W / (2 * zoom), halfH = VIEW_H / (2 * zoom);
@@ -382,6 +463,13 @@ function updateCamera(m, dt, playing) {
 
   cam.follow(fx, fy, zoom, dt, m.phase === 'goal' ? 3 : 6);
   cam.update(dt);
+}
+
+function togglePause(force) {
+  Game.paused = force === undefined ? !Game.paused : force;
+  document.getElementById('pause').classList.toggle('hidden', !Game.paused);
+  TOUCH.setVisible(Game.touchMode && Game.state === 'play' && !Game.paused);
+  SFX.uiBack();
 }
 
 /* ---------------------------------------------------------------- render  */
@@ -543,6 +631,12 @@ function drawHUD(ctx, m) {
 
   // ---------------- scoreboard bug
   const w = 520, h = 78, x = cx - w / 2, y = 18;
+  const sbK = Math.min(1, (VIEW_W * 0.38) / w);
+  ctx.save();
+  ctx.translate(cx, y);
+  ctx.scale(sbK, sbK);
+  ctx.translate(-cx, -y);
+
   ctx.save();
   ctx.shadowColor = 'rgba(0,0,0,0.6)';
   ctx.shadowBlur = 24; ctx.shadowOffsetY = 6;
@@ -616,6 +710,7 @@ function drawHUD(ctx, m) {
   ctx.fillStyle = 'rgba(190,214,242,.85)';
   ctx.fillText(strip, cx, y + h + 15);
   ctx.restore();
+  ctx.restore();          // end scoreboard scale
 
   // ---------------- per-player panels
   const slots = m.opts.humans;
@@ -634,7 +729,7 @@ function drawHUD(ctx, m) {
     const msg = m.messages[i];
     const a = clamp(msg.life / 0.4, 0, 1) * clamp((msg.max - msg.life) / 0.15, 0, 1);
     ctx.globalAlpha = a;
-    ctx.font = '900 34px Impact, "Arial Black", sans-serif';
+    ctx.font = `900 ${Game.touchMode ? 27 : 34}px Impact, "Arial Black", sans-serif`;
     // Dark plate so callouts stay legible over bright ice.
     const tw = ctx.measureText(msg.text).width;
     const pw = Math.max(tw, msg.sub ? ctx.measureText(msg.sub).width * 1.4 : 0) + 56;
@@ -666,7 +761,7 @@ function drawPlayerPanel(ctx, m, s, side, idx) {
   const c = team.colors;
   const w = 268, h = 84;
   const x = side === 'left' ? 26 : VIEW_W - w - 26;
-  const y = VIEW_H - h - 26;
+  const y = Game.touchMode ? 132 : VIEW_H - h - 26;
 
   ctx.save();
   ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 5;

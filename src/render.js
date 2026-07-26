@@ -136,6 +136,99 @@ function drawCrest(ctx, team, r) {
       ctx.stroke();
       ctx.restore();
       break;
+    case 'duck': {                       // stylised mask/bill
+      P([[0, -0.9], [0.62, -0.45], [0.72, 0.35], [0, 0.72], [-0.72, 0.35], [-0.62, -0.45]],
+        c.primary, c.accent, 0.09);
+      P([[-0.34, 0.1], [0.34, 0.1], [0.5, 0.5], [0, 0.72], [-0.5, 0.5]], c.accent);
+      circle(-0.26, -0.3, 0.11, c.accent);
+      circle(0.26, -0.3, 0.11, c.accent);
+      break;
+    }
+    case 'note': {                       // blue note
+      ctx.save();
+      ctx.rotate(-0.22);
+      ctx.fillStyle = c.primary;
+      ctx.beginPath();
+      ctx.ellipse(-0.24 * r, 0.5 * r, 0.42 * r, 0.3 * r, -0.3, 0, TAU);
+      ctx.fill();
+      ctx.fillRect(0.1 * r, -0.9 * r, 0.16 * r, 1.4 * r);
+      ctx.beginPath();
+      ctx.moveTo(0.26 * r, -0.9 * r);
+      ctx.quadraticCurveTo(0.9 * r, -0.72 * r, 0.66 * r, -0.2 * r);
+      ctx.quadraticCurveTo(0.78 * r, -0.62 * r, 0.26 * r, -0.66 * r);
+      ctx.fill();
+      ctx.restore();
+      break;
+    }
+    case 'wing': {                       // winged wheel
+      circle(0, 0.05, 0.42, 'transparent', c.primary, 0.12);
+      circle(0, 0.05, 0.1, c.primary);
+      for (let i = 0; i < 6; i++) {
+        const a = i * TAU / 6;
+        ctx.save(); ctx.rotate(a);
+        ctx.fillStyle = c.primary;
+        ctx.fillRect(-0.035 * r, -0.42 * r, 0.07 * r, 0.34 * r);
+        ctx.restore();
+      }
+      for (const s of [-1, 1]) {
+        for (let f = 0; f < 3; f++) {
+          P([[s * 0.4, -0.34 + f * 0.2], [s * (0.95 + f * 0.02), -0.5 + f * 0.24],
+          [s * 0.95, -0.34 + f * 0.24], [s * 0.4, -0.16 + f * 0.2]], c.primary);
+        }
+      }
+      break;
+    }
+    case 'feather': {
+      ctx.save();
+      ctx.rotate(0.35);
+      ctx.fillStyle = c.primary;
+      ctx.beginPath();
+      ctx.moveTo(0, -0.95 * r);
+      ctx.quadraticCurveTo(0.42 * r, -0.1 * r, 0.1 * r, 0.9 * r);
+      ctx.quadraticCurveTo(-0.34 * r, -0.05 * r, 0, -0.95 * r);
+      ctx.fill();
+      ctx.strokeStyle = c.accent; ctx.lineWidth = 0.07 * r;
+      ctx.beginPath();
+      ctx.moveTo(0, -0.86 * r); ctx.lineTo(0.08 * r, 0.8 * r);
+      ctx.stroke();
+      ctx.restore();
+      break;
+    }
+    case 'bison': {
+      P([[-0.8, -0.1], [-0.5, -0.62], [0.5, -0.62], [0.8, -0.1],
+      [0.55, 0.5], [0.2, 0.9], [-0.2, 0.9], [-0.55, 0.5]], c.primary, c.accent, 0.08);
+      P([[-0.8, -0.16], [-0.98, -0.62], [-0.6, -0.86], [-0.52, -0.5]], c.accent);
+      P([[0.8, -0.16], [0.98, -0.62], [0.6, -0.86], [0.52, -0.5]], c.accent);
+      circle(-0.26, -0.1, 0.09, c.accent);
+      circle(0.26, -0.1, 0.09, c.accent);
+      break;
+    }
+    case 'wingp': {                      // winged keystone
+      for (const s of [-1, 1]) {
+        for (let f = 0; f < 3; f++) {
+          P([[s * 0.26, -0.42 + f * 0.22], [s * (0.98 - f * 0.06), -0.56 + f * 0.28],
+          [s * (0.98 - f * 0.06), -0.4 + f * 0.28], [s * 0.26, -0.22 + f * 0.22]], c.primary);
+        }
+      }
+      P([[0, -0.82], [0.34, -0.4], [0.24, 0.72], [-0.24, 0.72], [-0.34, -0.4]], c.primary, c.accent, 0.09);
+      break;
+    }
+    case 'skate': {                      // flying skate
+      P([[-0.9, 0.14], [-0.34, -0.5], [0.5, -0.5], [0.92, -0.05], [0.62, 0.42], [-0.6, 0.42]],
+        c.secondary, c.accent, 0.08);
+      ctx.save();
+      ctx.strokeStyle = c.accent; ctx.lineWidth = 0.13 * r; ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-0.78 * r, 0.66 * r); ctx.lineTo(0.72 * r, 0.66 * r);
+      ctx.stroke();
+      ctx.lineWidth = 0.07 * r;
+      ctx.beginPath();
+      ctx.moveTo(-0.6 * r, 0.42 * r); ctx.lineTo(-0.6 * r, 0.66 * r);
+      ctx.moveTo(0.55 * r, 0.42 * r); ctx.lineTo(0.55 * r, 0.66 * r);
+      ctx.stroke();
+      ctx.restore();
+      break;
+    }
     default:
       circle(0, 0, 0.85, c.primary, c.accent, 0.1);
   }
@@ -173,6 +266,29 @@ class Renderer {
     this.scratchCtx = null;
     this.scratchScale = 0.55;
     this.goalLight = [0, 0];
+    this.softShadow = Renderer.makeShadowSprite();
+  }
+
+  /** Radial-gradient blob used for every contact shadow. */
+  static makeShadowSprite() {
+    const size = 128;
+    const cv = makeCanvas(size, size);
+    const g = cv.getContext('2d');
+    const rg = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+    rg.addColorStop(0, 'rgba(10,23,38,0.62)');
+    rg.addColorStop(0.55, 'rgba(10,23,38,0.34)');
+    rg.addColorStop(1, 'rgba(10,23,38,0)');
+    g.fillStyle = rg;
+    g.fillRect(0, 0, size, size);
+    return cv;
+  }
+
+  /** Blit the shadow blob at a world position, sized rx/ry. */
+  blob(g, x, y, rx, ry, alpha) {
+    g.save();
+    g.globalAlpha = alpha;
+    g.drawImage(this.softShadow, x - rx, y - ry, rx * 2, ry * 2);
+    g.restore();
   }
 
   /** Bake stands + boards + painted ice for the chosen matchup. */
@@ -379,18 +495,52 @@ class Renderer {
       circle(sx * RINK.nzDotX, sy * RINK.dotY, 14, '#d8232f', 0, '#d8232f');
     }
 
-    // Creases + trapezoids.
+    // Creases: straight sides off the goal line, then the 6ft radius arc.
     for (const s of [-1, 1]) {
       const gl = s * RINK.goalLine;
+      const cw = 62;                       // half width of the blue paint
+      const straight = 34;                 // straight run before the arc
+      const depth = RINK.creaseR;
+      const dir = -s;                      // out onto the ice, away from the boards
+
+      const creasePath = () => {
+        g.beginPath();
+        g.moveTo(gl, -cw);
+        g.lineTo(gl + dir * straight, -cw);
+        g.bezierCurveTo(gl + dir * (depth - 4), -cw, gl + dir * depth, -cw * 0.55, gl + dir * depth, 0);
+        g.bezierCurveTo(gl + dir * depth, cw * 0.55, gl + dir * (depth - 4), cw, gl + dir * straight, cw);
+        g.lineTo(gl, cw);
+        g.closePath();
+      };
+
       g.save();
-      g.beginPath();
-      g.moveTo(gl, -RINK.creaseR * 0.62);
-      g.arc(gl, 0, RINK.creaseR, s > 0 ? Math.PI * 0.72 : -Math.PI * 0.28,
-        s > 0 ? Math.PI * 1.28 : Math.PI * 0.28, false);
-      g.closePath();
-      g.fillStyle = 'rgba(96,166,240,0.55)';
+      creasePath();
+      // Paint is deeper right at the goal mouth and fades outward.
+      const cg = g.createLinearGradient(gl, 0, gl + dir * depth, 0);
+      cg.addColorStop(0, 'rgba(70,146,232,0.72)');
+      cg.addColorStop(1, 'rgba(126,186,246,0.42)');
+      g.fillStyle = cg;
       g.fill();
+      // Inner sheen so the paint reads as ice, not a flat sticker.
+      g.save();
+      creasePath(); g.clip();
+      const sh = g.createLinearGradient(0, -cw, 0, cw);
+      sh.addColorStop(0, 'rgba(255,255,255,0.28)');
+      sh.addColorStop(0.45, 'rgba(255,255,255,0.04)');
+      sh.addColorStop(1, 'rgba(10,50,110,0.14)');
+      g.fillStyle = sh;
+      g.fillRect(gl - depth, -cw, depth * 2, cw * 2);
+      g.restore();
+      creasePath();
       g.strokeStyle = '#d8232f'; g.lineWidth = 5; g.stroke();
+      // The two white hash marks on the crease lines.
+      g.strokeStyle = 'rgba(255,255,255,0.9)'; g.lineWidth = 4;
+      for (const sy of [-1, 1]) {
+        g.beginPath();
+        g.moveTo(gl + dir * straight, sy * cw);
+        g.lineTo(gl + dir * straight, sy * (cw - 16));
+        g.stroke();
+      }
       g.restore();
 
       // Restricted-area trapezoid
@@ -517,55 +667,94 @@ class Renderer {
       g.restore();
     }
 
+    // Cage outline: straight sides from the posts, rounded back corners.
+    const bw = gh * 0.82;                 // half width at the back of the cage
+    const rr = 14;                        // rounded back corners
+    const cagePath = () => {
+      g.beginPath();
+      g.moveTo(gl, -gh);
+      g.lineTo(back - side * rr, -bw);
+      g.quadraticCurveTo(back, -bw, back, -bw + rr);
+      g.lineTo(back, bw - rr);
+      g.quadraticCurveTo(back, bw, back - side * rr, bw);
+      g.lineTo(gl, gh);
+      g.closePath();
+    };
+
     g.save();
-    // Mesh
-    g.beginPath();
-    g.moveTo(gl, -gh); g.lineTo(back, -gh * 0.85);
-    g.lineTo(back, gh * 0.85); g.lineTo(gl, gh);
-    g.closePath();
-    g.fillStyle = 'rgba(228,238,250,0.55)';
+
+    // Soft shadow the cage casts on the ice.
+    g.save();
+    g.translate(side * 5, 7);
+    cagePath();
+    g.fillStyle = 'rgba(12,28,50,0.18)';
     g.fill();
-    g.strokeStyle = 'rgba(74,96,124,0.75)';
-    g.lineWidth = 1.6;
-    for (let i = 1; i < 7; i++) {
-      const t = i / 7;
-      g.beginPath();
-      g.moveTo(lerp(gl, back, t), lerp(-gh, -gh * 0.85, t));
-      g.lineTo(lerp(gl, back, t), lerp(gh, gh * 0.85, t));
-      g.stroke();
-    }
-    for (let i = 1; i < 9; i++) {
-      const t = i / 9;
-      g.beginPath();
-      g.moveTo(gl, lerp(-gh, gh, t));
-      g.lineTo(back, lerp(-gh * 0.85, gh * 0.85, t));
-      g.stroke();
-    }
-    // Frame
-    g.strokeStyle = '#b81515';
-    g.lineWidth = 11;
-    g.lineCap = 'round';
-    g.beginPath();
-    g.moveTo(gl, -gh); g.lineTo(back, -gh * 0.85);
-    g.lineTo(back, gh * 0.85); g.lineTo(gl, gh);
-    g.stroke();
-    g.strokeStyle = '#f03030';
-    g.lineWidth = 7;
-    g.stroke();
-    // Crossbar, seen from directly above — hint it, don't wall off the mouth.
+    g.restore();
+
+    // Netting: white twine, denser toward the back, with a diamond weave.
+    cagePath();
+    g.fillStyle = 'rgba(236,243,252,0.62)';
+    g.fill();
+
     g.save();
-    g.globalAlpha = 0.45;
-    g.strokeStyle = '#ff3b3b';
+    cagePath();
+    g.clip();
+    g.lineWidth = 1.3;
+    g.strokeStyle = 'rgba(96,116,146,0.62)';
+    const span = Math.abs(back - gl);
+    const diag = 13;
+    // Two crossing families of lines make the mesh read as woven twine
+    // rather than a grid of squares.
+    for (let d = -gh * 2; d < span + gh * 2; d += diag) {
+      g.beginPath();
+      g.moveTo(gl + side * d, -gh - 20);
+      g.lineTo(gl + side * (d + gh * 2 + 20), gh + 20);
+      g.stroke();
+      g.beginPath();
+      g.moveTo(gl + side * d, gh + 20);
+      g.lineTo(gl + side * (d + gh * 2 + 20), -gh - 20);
+      g.stroke();
+    }
+    // Depth: the back of the cage sits in shade.
+    const dg = g.createLinearGradient(gl, 0, back, 0);
+    dg.addColorStop(0, 'rgba(20,40,70,0)');
+    dg.addColorStop(1, 'rgba(20,40,70,0.30)');
+    g.fillStyle = dg;
+    g.fill();
+    g.restore();
+
+    // White base skirt around the foot of the cage.
+    g.save();
+    cagePath();
+    g.strokeStyle = 'rgba(250,252,255,0.85)';
+    g.lineWidth = 13;
+    g.stroke();
+    g.restore();
+
+    // Frame pipe: dark base, red body, bright top highlight.
+    cagePath();
+    g.lineJoin = 'round'; g.lineCap = 'round';
+    g.strokeStyle = '#7d0d0d'; g.lineWidth = 12; g.stroke();
+    g.strokeStyle = '#d81f1f'; g.lineWidth = 8.5; g.stroke();
+    g.strokeStyle = '#ff6b6b'; g.lineWidth = 3; g.stroke();
+
+    // Crossbar directly overhead — suggested, so the mouth stays open.
+    g.save();
+    g.globalAlpha = 0.4;
+    g.strokeStyle = '#ff5252';
     g.lineWidth = 3.5;
     g.beginPath();
     g.moveTo(gl, -gh); g.lineTo(gl, gh);
     g.stroke();
     g.restore();
+
+    // Posts, with a specular dot so they look like round steel.
     for (const sy of [-1, 1]) {
-      g.beginPath();
-      g.arc(gl, sy * gh, 6.5, 0, TAU);
-      g.fillStyle = '#ff5252'; g.fill();
-      g.strokeStyle = 'rgba(0,0,0,0.4)'; g.lineWidth = 2; g.stroke();
+      g.beginPath(); g.arc(gl, sy * gh, 7, 0, TAU);
+      g.fillStyle = '#c81b1b'; g.fill();
+      g.strokeStyle = 'rgba(0,0,0,0.45)'; g.lineWidth = 2; g.stroke();
+      g.beginPath(); g.arc(gl - 2, sy * gh - 2.4, 2.4, 0, TAU);
+      g.fillStyle = 'rgba(255,220,220,0.9)'; g.fill();
     }
     g.restore();
   }
@@ -574,19 +763,30 @@ class Renderer {
    *  similarly-coloured clubs apart at a glance. */
   static kit(team, isAway) {
     const c = team.colors;
+    // Pants and helmet are chosen to sit clearly apart in value from the
+    // sweater, so a navy club doesn't render as one undifferentiated blob.
     if (!isAway) {
+      const yoke = contrastPick(c.primary, [c.secondary, c.accent], 0.18);
       return {
-        jersey: c.primary, yoke: shade(c.secondary, 0.05), stripe: c.accent,
-        glove: shade(c.secondary, -0.2), helmet: shade(c.secondary, 0.02),
-        pants: shade(c.secondary, -0.15), edge: shade(c.primary, -0.55),
+        jersey: c.primary,
+        yoke,
+        stripe: contrastPick(c.primary, [c.accent, c.secondary], 0.25),
+        glove: yoke,
+        helmet: contrastPick(c.primary, ['#1c2230', '#e8eef8'], 0.3),
+        pants: lum(c.primary) > 0.42 ? '#191f2b' : shade(c.secondary, -0.35),
+        edge: 'rgba(6,12,22,0.75)',
         ink: contrastInk(c.primary),
       };
     }
     return {
-      jersey: '#f4f7fc', yoke: c.primary, stripe: c.secondary,
-      glove: c.primary, helmet: '#eef3fa',
-      pants: shade(c.secondary, -0.25), edge: shade(c.primary, -0.3),
-      ink: c.primary === '#FFFFFF' ? '#16233a' : shade(c.primary, -0.15),
+      jersey: '#f1f5fb',
+      yoke: c.primary,
+      stripe: contrastPick('#f1f5fb', [c.secondary, c.primary], 0.25),
+      glove: c.primary,
+      helmet: contrastPick('#f1f5fb', [c.primary, c.secondary], 0.3),
+      pants: '#191f2b',
+      edge: 'rgba(6,12,22,0.7)',
+      ink: lum(c.primary) > 0.62 ? shade(c.primary, -0.45) : c.primary,
     };
   }
 
@@ -601,14 +801,9 @@ class Renderer {
     // Body art is authored at r=21; scale to whatever SKATER_R is.
     g.scale(SKATER_R / 21, SKATER_R / 21);
 
-    // Contact shadow.
-    g.save();
-    g.globalAlpha = down ? 0.16 : 0.3;
-    g.fillStyle = '#0b1a2b';
-    g.beginPath();
-    g.ellipse(3, 7, SKATER_R * (down ? 1.25 : 0.92), SKATER_R * (down ? 0.8 : 0.6), 0, 0, TAU);
-    g.fill();
-    g.restore();
+    // Contact shadow, offset with the arena lighting.
+    this.blob(g, 3, 7, SKATER_R * (down ? 1.5 : 1.15), SKATER_R * (down ? 1.0 : 0.78),
+      down ? 0.5 : 0.72);
 
     // Fire aura.
     if (s.fire > 0) {
@@ -641,127 +836,193 @@ class Renderer {
       g.restore();
     }
 
-    const elevate = down ? 2 : -7;             // fake a little height off the ice
+    const elevate = down ? 2 : -8;             // fake a little height off the ice
     g.save();                                  // ---- body space
     g.translate(0, elevate);
-    g.rotate(s.face + (down ? s.skatePhase * 0.6 : 0));
-    if (down) g.scale(1.15, 0.72);
+    g.rotate(s.face + (down ? 0.5 : 0));
+    if (down) g.scale(1.2, 0.62);
 
     const lean = clamp(s.lean, -0.5, 0.5);
     const stride = Math.sin(s.skatePhase * 2) * (down ? 0 : 1);
     const pants = kit.pants;
+    const bladeAhead = 30;
+    const bladeY = (s.pokeAnim > 0 ? 1 : 8) + Math.sin(s.skatePhase * 2) * 2;
 
-    // ---- skates + legs
+    // ---- skates: boot, steel holder, blade. The push leg splays out.
     for (const side of [-1, 1]) {
-      const off = side * 9;
-      const push = stride * side * 7;
+      const push = stride * side;
+      const splay = side * (0.14 + Math.max(0, push) * 0.3);
       g.save();
-      g.translate(-4 + push, off);
-      g.fillStyle = pants;
-      g.beginPath();
-      g.ellipse(0, 0, 11, 6.5, 0, 0, TAU);
-      g.fill();
-      g.fillStyle = '#1a1d24';
-      g.fillRect(-2, -2.6, 13, 5.2);
-      g.fillStyle = '#c9d4e2';
-      g.fillRect(2, -1, 10, 1.6);
+      g.translate(-7 + push * 6, side * 8 + push);
+      g.rotate(splay);
+
+      g.beginPath();                                   // pant leg / shin
+      g.ellipse(-1.5, 0, 6.5, 3.9, 0, 0, TAU);
+      g.fillStyle = pants; g.fill();
+      g.strokeStyle = 'rgba(8,14,24,0.4)'; g.lineWidth = 0.8; g.stroke();
+
+      g.beginPath();                                   // boot
+      g.moveTo(1.5, -2.7);
+      g.lineTo(8, -2);
+      g.quadraticCurveTo(10.5, 0, 8, 2);
+      g.lineTo(1.5, 2.7);
+      g.closePath();
+      g.fillStyle = '#181c24'; g.fill();
+
+      g.fillStyle = '#59616e';                         // holder
+      g.fillRect(1.5, -0.8, 8, 1.6);
+      g.strokeStyle = '#e2ecf8'; g.lineWidth = 1.2; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(0.5, 0); g.lineTo(11, 0); g.stroke();
       g.restore();
     }
 
-    // ---- stick
-    const bladeAhead = 34;
+    // ---- stick, two hands on it, blade flat on the ice out front
+    const topHand = { x: 0, y: 13.5 + (s.checkAnim > 0 ? -7 : 0) };
+    const botHand = { x: 14, y: lerp(topHand.y, bladeY, 0.5) };
     g.save();
-    g.strokeStyle = '#c89a52';
-    g.lineWidth = 3.8;
     g.lineCap = 'round';
-    const gripY = 9 + (s.checkAnim > 0 ? -6 : 0);
-    const bladeY = (s.pokeAnim > 0 ? 0 : 8) + Math.sin(s.skatePhase * 2) * 2;
+    g.strokeStyle = 'rgba(8,14,24,0.28)';
+    g.lineWidth = 4;
+    g.beginPath(); g.moveTo(topHand.x, topHand.y + 1.5); g.lineTo(bladeAhead - 5, bladeY + 1.5); g.stroke();
+    g.strokeStyle = '#23282f';
+    g.lineWidth = 2.6;
+    g.beginPath(); g.moveTo(topHand.x, topHand.y); g.lineTo(bladeAhead - 5, bladeY); g.stroke();
+    g.strokeStyle = kit.stripe;                        // tape at the knob
+    g.lineWidth = 3;
+    g.beginPath(); g.moveTo(topHand.x, topHand.y); g.lineTo(topHand.x + 3, topHand.y - 1); g.stroke();
+    g.strokeStyle = '#15181e';                         // blade
+    g.lineWidth = 3.8;
     g.beginPath();
-    g.moveTo(4, gripY);
-    g.lineTo(bladeAhead - 6, bladeY);
-    g.stroke();
-    g.strokeStyle = '#20242c';
-    g.lineWidth = 5.2;
-    g.beginPath();
-    g.moveTo(bladeAhead - 7, bladeY);
-    g.lineTo(bladeAhead + 8, bladeY - 3);
+    g.moveTo(bladeAhead - 5, bladeY);
+    g.quadraticCurveTo(bladeAhead + 1, bladeY - 1.6, bladeAhead + 6, bladeY - 3.4);
     g.stroke();
     g.restore();
 
-    // ---- torso
+    // ---- body. Torso dominates; shoulders are bumps, not lobes.
     g.save();
-    g.rotate(lean * 0.25);
-    // Dark halo so a light jersey still separates from the ice.
-    g.beginPath();
-    g.ellipse(0, 0, 19.5, 17, 0, 0, TAU);
-    g.fillStyle = 'rgba(10,20,34,0.30)';
+    g.rotate(lean * 0.2);
+
+    const bodyPath = () => {
+      g.beginPath();
+      g.ellipse(0, 0, 15.5, 12.8, 0, 0, TAU);
+    };
+
+    g.save();                                          // separation halo
+    g.translate(1.5, 2.5);
+    bodyPath();
+    g.fillStyle = 'rgba(8,18,32,0.24)';
     g.fill();
-    // jersey
-    g.beginPath();
-    g.ellipse(0, 0, 17, 14.5, 0, 0, TAU);
+    g.restore();
+
+    for (const sy of [-1, 1]) {                        // shoulder bumps
+      g.save();
+      g.translate(4, sy * 9.8);
+      g.rotate(sy * 0.3);
+      g.beginPath();
+      g.ellipse(0, 0, 6, 4.2, 0, 0, TAU);
+      g.fillStyle = kit.jersey; g.fill();
+      g.strokeStyle = kit.edge; g.lineWidth = 1.2; g.stroke();
+      g.restore();
+    }
+
+    bodyPath();
     g.fillStyle = kit.jersey;
     g.fill();
-    // shoulder yokes
-    g.beginPath();
-    g.ellipse(-3, 0, 15, 15.5, 0, -0.9, 0.9);
+
+    g.save();
+    bodyPath();
+    g.clip();
+    g.beginPath();                                     // chest yoke
+    g.moveTo(9, -14);
+    g.quadraticCurveTo(17, -6, 17, 0);
+    g.quadraticCurveTo(17, 6, 9, 14);
+    g.quadraticCurveTo(13.5, 0, 9, -14);
     g.fillStyle = kit.yoke;
-    g.globalAlpha = 0.9;
     g.fill();
-    g.globalAlpha = 1;
-    // arm stripe
-    g.strokeStyle = kit.stripe;
-    g.lineWidth = 3;
+    g.strokeStyle = kit.stripe;                        // sleeve cuffs
+    g.lineWidth = 2;
+    for (const sy of [-1, 1]) {
+      g.beginPath();
+      g.moveTo(2, sy * 13); g.quadraticCurveTo(8, sy * 10, 11, sy * 6);
+      g.stroke();
+    }
+    g.lineWidth = 1.8;                                 // hem stripe
     g.beginPath();
-    g.ellipse(0, 0, 13.5, 11, 0, -1.1, 1.1);
+    g.moveTo(-11.5, -8); g.quadraticCurveTo(-15, 0, -11.5, 8);
     g.stroke();
-    // outline
-    g.beginPath();
-    g.ellipse(0, 0, 17, 14.5, 0, 0, TAU);
+    g.restore();
+
+    bodyPath();
     g.strokeStyle = kit.edge;
-    g.lineWidth = 2.2;
+    g.lineWidth = 1.8;
     g.stroke();
     g.restore();
 
     // ---- gloves
-    for (const side of [-1, 1]) {
+    for (const h of [topHand, botHand]) {
       g.save();
-      const gx = side < 0 ? 9 : 13;
-      const gy = side * 11 + (side > 0 ? -2 : 0);
-      g.translate(gx, gy);
+      g.translate(h.x, h.y);
       g.fillStyle = kit.glove;
-      g.beginPath(); g.arc(0, 0, 5.6, 0, TAU); g.fill();
-      g.strokeStyle = kit.stripe; g.lineWidth = 1.3; g.stroke();
+      g.beginPath();
+      g.ellipse(0, 0, 5, 4.1, 0, 0, TAU);
+      g.fill();
+      g.strokeStyle = kit.edge; g.lineWidth = 1; g.stroke();
       g.restore();
     }
 
-    // ---- helmet
+    // ---- helmet: shell, ear cups, cage
     g.save();
-    g.translate(9, 0);
-    g.fillStyle = kit.helmet;
-    g.beginPath(); g.arc(0, 0, 9.2, 0, TAU); g.fill();
-    g.strokeStyle = kit.edge; g.lineWidth = 1.6; g.stroke();
-    // visor / cage
-    g.beginPath();
-    g.arc(1, 0, 8.6, -1.15, 1.15);
-    g.strokeStyle = 'rgba(30,40,60,0.75)';
-    g.lineWidth = 3.4;
-    g.stroke();
+    g.translate(10.5, 0);
+    g.beginPath(); g.arc(0, 0, 7.8, 0, TAU);
+    g.fillStyle = kit.helmet; g.fill();
+    g.strokeStyle = kit.edge; g.lineWidth = 1.3; g.stroke();
+    g.strokeStyle = 'rgba(0,0,0,0.16)';
+    g.lineWidth = 1.2;
+    g.beginPath(); g.arc(-1, 0, 5, -1.5, 1.5); g.stroke();
+    for (const sy of [-1, 1]) {
+      g.beginPath(); g.ellipse(-1.5, sy * 6.2, 2.8, 2, 0, 0, TAU);
+      g.fillStyle = shade(kit.helmet, -0.28); g.fill();
+    }
+    g.strokeStyle = 'rgba(24,32,48,0.8)';
+    g.lineWidth = 2.1;
+    g.beginPath(); g.arc(1.2, 0, 7, -1.25, 1.25); g.stroke();
     g.restore();
 
     g.restore(); // ---- end body space
+
+    // ---- volume lighting, fixed in world space so it does not spin with him
+    if (!down) {
+      g.save();
+      g.translate(0, elevate);
+      g.beginPath();
+      g.ellipse(0, 0, 18, 16, 0, 0, TAU);
+      g.clip();
+      const hi = g.createLinearGradient(0, -16, 0, -1);
+      hi.addColorStop(0, 'rgba(255,255,255,0.22)');
+      hi.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = hi;
+      g.fillRect(-20, -20, 40, 40);
+      const lo = g.createLinearGradient(0, 3, 0, 16);
+      lo.addColorStop(0, 'rgba(6,16,32,0)');
+      lo.addColorStop(1, 'rgba(6,16,32,0.22)');
+      g.fillStyle = lo;
+      g.fillRect(-20, -20, 40, 40);
+      g.restore();
+    }
 
     // ---- number, always upright
     if (!down) {
       g.save();
       g.translate(0, elevate + 1);
-      g.font = '900 13px Impact, "Arial Black", sans-serif';
+      g.font = '900 11px Impact, "Arial Black", sans-serif';
       g.textAlign = 'center';
       g.textBaseline = 'middle';
-      g.lineWidth = 3;
+      const nx = -Math.cos(s.face) * 3.5, ny = -Math.sin(s.face) * 3.5;
+      g.lineWidth = 2.4;
       g.strokeStyle = 'rgba(0,0,0,0.45)';
-      g.strokeText(String(s.data.n), 0, 0);
+      g.strokeText(String(s.data.n), nx, ny);
       g.fillStyle = kit.ink;
-      g.fillText(String(s.data.n), 0, 0);
+      g.fillText(String(s.data.n), nx, ny);
       g.restore();
     } else {
       // Stars when knocked down.
@@ -801,79 +1062,97 @@ class Renderer {
     const kit = Renderer.kit(team, gk.team === 1);
     g.save();
     g.translate(gk.x, gk.y);
-    g.scale(1.2, 1.2);
+    g.scale(1.1, 1.1);
 
-    g.globalAlpha = 0.3;
-    g.fillStyle = '#0b1a2b';
-    g.beginPath(); g.ellipse(3, 8, 26, 17, 0, 0, TAU); g.fill();
-    g.globalAlpha = 1;
+    this.blob(g, 4, 10, 38, 26, 0.8);
 
-    g.translate(0, -6);
-    const face = gk.face;
-    g.rotate(face);
+    g.translate(0, -7);
+    g.rotate(gk.face);
 
     const flash = gk.saveAnim > 0 ? gk.saveAnim / 0.45 : 0;
 
-    // Leg pads — big rectangles across the mouth.
+    // Leg pads — the big rectangles that cover the bottom of the net.
     for (const side of [-1, 1]) {
       g.save();
-      g.translate(2, side * (13 + flash * 6));
-      g.rotate(side * flash * 0.4);
-      g.fillStyle = '#f2f4f8';
-      g.strokeStyle = kit.yoke;
-      g.lineWidth = 3;
-      const w = 26, h = 15;
+      g.translate(3, side * (14 + flash * 7));
+      g.rotate(side * flash * 0.45);
+      const w = 30, h = 17;
       g.beginPath();
-      g.roundRect ? g.roundRect(-w / 2, -h / 2, w, h, 5) : g.rect(-w / 2, -h / 2, w, h);
-      g.fill(); g.stroke();
+      if (g.roundRect) g.roundRect(-w / 2, -h / 2, w, h, 5); else g.rect(-w / 2, -h / 2, w, h);
+      g.fillStyle = '#f4f7fb'; g.fill();
+      g.strokeStyle = c.primary; g.lineWidth = 3; g.stroke();
+      // roll bars across the pad face
+      g.strokeStyle = 'rgba(30,50,80,0.28)'; g.lineWidth = 1.2;
+      for (const bx of [-8, 0, 8]) {
+        g.beginPath(); g.moveTo(bx, -h / 2 + 2); g.lineTo(bx, h / 2 - 2); g.stroke();
+      }
+      // skate poking out the back of the pad
+      g.strokeStyle = '#cdd8e6'; g.lineWidth = 1.6;
+      g.beginPath(); g.moveTo(-w / 2 - 4, 0); g.lineTo(-w / 2 + 1, 0); g.stroke();
       g.restore();
     }
 
-    // Body
+    // Chest and arm protector
     g.beginPath();
-    g.ellipse(0, 0, 16, 15, 0, 0, TAU);
-    g.fillStyle = kit.jersey; g.fill();
-    g.strokeStyle = kit.edge; g.lineWidth = 2.2; g.stroke();
-
-    // Blocker + glove
+    g.moveTo(-11, -14); g.quadraticCurveTo(6, -19, 15, -12);
+    g.quadraticCurveTo(20, 0, 15, 12);
+    g.quadraticCurveTo(6, 19, -11, 14);
+    g.quadraticCurveTo(-15, 0, -11, -14);
+    g.closePath();
+    g.fillStyle = c.primary; g.fill();
+    g.strokeStyle = shade(c.primary, -0.45); g.lineWidth = 2.2; g.stroke();
+    // chest crest
     g.save();
-    g.translate(8, -18 - flash * 9);
+    g.globalAlpha = 0.5;
+    g.translate(3, 0); g.rotate(-gk.face);
+    drawCrest(g, team, 8);
+    g.restore();
+
+    // Blocker — rectangular slab on the stick side
+    g.save();
+    g.translate(9, -20 - flash * 10);
     g.rotate(-flash * 0.5);
-    g.fillStyle = shade(c.secondary, 0.05);
     g.beginPath();
-    g.roundRect ? g.roundRect(-7, -9, 15, 18, 4) : g.rect(-7, -9, 15, 18);
-    g.fill();
-    g.strokeStyle = c.accent; g.lineWidth = 1.5; g.stroke();
+    if (g.roundRect) g.roundRect(-8, -10, 17, 20, 4); else g.rect(-8, -10, 17, 20);
+    g.fillStyle = '#eef3fa'; g.fill();
+    g.strokeStyle = kit.yoke; g.lineWidth = 2; g.stroke();
+    g.strokeStyle = 'rgba(30,50,80,0.25)'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(-4, -9); g.lineTo(-4, 9); g.stroke();
     g.restore();
 
+    // Trapper — round catching glove
     g.save();
-    g.translate(8, 18 + flash * 9);
-    g.fillStyle = shade(c.secondary, -0.1);
-    g.beginPath(); g.arc(0, 0, 9 + flash * 2, 0, TAU); g.fill();
-    g.strokeStyle = c.accent; g.lineWidth = 1.6; g.stroke();
+    g.translate(9, 20 + flash * 10);
+    g.beginPath(); g.arc(0, 0, 10 + flash * 2, 0, TAU);
+    g.fillStyle = kit.glove; g.fill();
+    g.strokeStyle = kit.edge; g.lineWidth = 1.8; g.stroke();
+    g.beginPath(); g.arc(2, 0, 6, -1.9, 1.1);
+    g.strokeStyle = 'rgba(255,255,255,0.75)'; g.lineWidth = 2.6; g.stroke();
     g.restore();
 
-    // Stick (paddle down)
-    g.strokeStyle = '#2a2118';
+    // Paddle-down stick
+    g.strokeStyle = '#1d2229';
     g.lineWidth = 5;
-    g.beginPath();
-    g.moveTo(4, -12); g.lineTo(24, 6);
-    g.stroke();
-    g.strokeStyle = '#e8e8e8';
-    g.lineWidth = 7;
-    g.beginPath();
-    g.moveTo(20, 2); g.lineTo(30, 12);
-    g.stroke();
+    g.lineCap = 'round';
+    g.beginPath(); g.moveTo(5, -14); g.lineTo(26, 6); g.stroke();
+    g.strokeStyle = '#e8eef6';
+    g.lineWidth = 9;
+    g.beginPath(); g.moveTo(21, 1); g.lineTo(33, 13); g.stroke();
+    g.strokeStyle = kit.yoke;
+    g.lineWidth = 2;
+    g.beginPath(); g.moveTo(21, 1); g.lineTo(33, 13); g.stroke();
 
     // Mask
     g.save();
-    g.translate(9, 0);
-    g.fillStyle = '#f6f8fb';
-    g.beginPath(); g.arc(0, 0, 9.5, 0, TAU); g.fill();
-    g.strokeStyle = c.primary; g.lineWidth = 2; g.stroke();
-    g.strokeStyle = 'rgba(30,40,60,0.8)';
-    g.lineWidth = 2.4;
-    g.beginPath(); g.arc(1, 0, 8.4, -1.2, 1.2); g.stroke();
+    g.translate(10, 0);
+    g.beginPath(); g.arc(0, 0, 10, 0, TAU);
+    g.fillStyle = '#f7f9fc'; g.fill();
+    g.strokeStyle = c.primary; g.lineWidth = 2.6; g.stroke();
+    g.strokeStyle = 'rgba(24,32,48,0.85)'; g.lineWidth = 2.6;
+    g.beginPath(); g.arc(1.5, 0, 8.8, -1.3, 1.3); g.stroke();
+    g.strokeStyle = 'rgba(24,32,48,0.6)'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(2, -7); g.lineTo(10, -3); g.stroke();
+    g.beginPath(); g.moveTo(2, 7); g.lineTo(10, 3); g.stroke();
     g.restore();
 
     g.restore();
@@ -883,10 +1162,11 @@ class Renderer {
     g.translate(gk.x, gk.y - 6);
     g.font = '900 12px Impact, "Arial Black", sans-serif';
     g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.lineWidth = 3; g.strokeStyle = 'rgba(0,0,0,0.45)';
-    g.strokeText(String(gk.data.n), 0, 0);
-    g.fillStyle = kit.ink;
-    g.fillText(String(gk.data.n), 0, 0);
+    const gnx = -Math.cos(gk.face) * 4, gny = -Math.sin(gk.face) * 4;
+    g.lineWidth = 3; g.strokeStyle = 'rgba(0,0,0,0.5)';
+    g.strokeText(String(gk.data.n), gnx, gny);
+    g.fillStyle = contrastInk(team.colors.primary);
+    g.fillText(String(gk.data.n), gnx, gny);
     g.restore();
   }
 
@@ -897,6 +1177,9 @@ class Renderer {
       g.save();
       g.lineCap = 'round';
       for (let i = 1; i < p.trail.length; i++) {
+        // Skip teleports (faceoff resets, whistles) so the trail never
+        // smears a band across the whole sheet.
+        if (dist(p.trail[i - 1].x, p.trail[i - 1].y, p.trail[i].x, p.trail[i].y) > 90) continue;
         const a = (i / p.trail.length) * clamp(sp / 1400, 0.15, 0.6);
         g.strokeStyle = p.hot > 0 ? `rgba(255,150,40,${a})` : `rgba(30,40,55,${a})`;
         g.lineWidth = PUCK_R * 2 * (i / p.trail.length);

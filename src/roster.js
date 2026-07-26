@@ -188,6 +188,172 @@ const TEAMS = [
   },
 ];
 
+/* ============================================================================
+ * LEGENDS — all-time lineups, throwback colours. Rated on peak form, which is
+ * why a 1980s roster can hang with anybody: that is the whole point.
+ * ==========================================================================*/
+
+const LEGEND_TEAMS = [
+  {
+    id: 'EDM84', city: 'Edmonton', name: "'84 Dynasty", abbr: 'EDM',
+    colors: { primary: '#FF4C00', secondary: '#0A2C64', accent: '#FFFFFF', ice: '#ff8b52' },
+    crest: 'drop',
+    skaters: [
+      { n: 99, name: 'W. Gretzky', short: 'GRETZKY', pos: 'C', spd: 89, sht: 91, pss: 99, chk: 52, hnd: 99 },
+      { n: 11, name: 'M. Messier', short: 'MESSIER', pos: 'C', spd: 88, sht: 92, pss: 90, chk: 96, hnd: 91 },
+      { n: 17, name: 'J. Kurri',   short: 'KURRI',   pos: 'W', spd: 90, sht: 95, pss: 88, chk: 68, hnd: 92 },
+    ],
+    goalie: { n: 31, name: 'G. Fuhr', short: 'FUHR', ref: 94, pos: 84, rec: 82 },
+  },
+  {
+    id: 'COL96', city: 'Colorado', name: 'Cup Era', abbr: 'COL',
+    colors: { primary: '#6F263D', secondary: '#236192', accent: '#A2AAAD', ice: '#c1738f' },
+    crest: 'peak',
+    skaters: [
+      { n: 21, name: 'P. Forsberg', short: 'FORSBERG', pos: 'C', spd: 89, sht: 91, pss: 97, chk: 94, hnd: 98 },
+      { n: 19, name: 'J. Sakic',    short: 'SAKIC',    pos: 'C', spd: 90, sht: 96, pss: 94, chk: 70, hnd: 94 },
+      { n: 52, name: 'A. Foote',    short: 'FOOTE',    pos: 'D', spd: 78, sht: 72, pss: 78, chk: 96, hnd: 74 },
+    ],
+    goalie: { n: 33, name: 'P. Roy', short: 'ROY', ref: 97, pos: 96, rec: 90 },
+  },
+  {
+    id: 'ANA97', city: 'Anaheim', name: 'Mighty Ducks', abbr: 'ANA',
+    colors: { primary: '#52307C', secondary: '#0B7A75', accent: '#F2E5C4', ice: '#8f6bbf' },
+    crest: 'duck',
+    skaters: [
+      { n: 9,  name: 'P. Kariya',     short: 'KARIYA',     pos: 'W', spd: 98, sht: 93, pss: 92, chk: 48, hnd: 97 },
+      { n: 8,  name: 'T. Selanne',    short: 'SELANNE',    pos: 'W', spd: 96, sht: 96, pss: 86, chk: 58, hnd: 94 },
+      { n: 27, name: 'S. Niedermayer', short: 'NIEDERMAYER', pos: 'D', spd: 96, sht: 84, pss: 94, chk: 74, hnd: 95 },
+    ],
+    goalie: { n: 35, name: 'J-S. Giguere', short: 'GIGUERE', ref: 90, pos: 91, rec: 85 },
+  },
+  {
+    id: 'STL98', city: 'St. Louis', name: 'Blue Note', abbr: 'STL',
+    colors: { primary: '#003087', secondary: '#041E42', accent: '#FCB514', ice: '#4a70c9' },
+    crest: 'note',
+    skaters: [
+      { n: 44, name: 'C. Pronger',  short: 'PRONGER',  pos: 'D', spd: 79, sht: 91, pss: 86, chk: 99, hnd: 82 },
+      { n: 2,  name: 'A. MacInnis', short: 'MACINNIS', pos: 'D', spd: 77, sht: 99, pss: 85, chk: 88, hnd: 79 },
+      { n: 16, name: 'B. Hull',     short: 'HULL',     pos: 'W', spd: 86, sht: 99, pss: 80, chk: 60, hnd: 93 },
+    ],
+    goalie: { n: 31, name: 'C. Joseph', short: 'CUJO', ref: 92, pos: 86, rec: 80 },
+  },
+  {
+    id: 'DET97', city: 'Detroit', name: 'Russian Five', abbr: 'DET',
+    colors: { primary: '#CE1126', secondary: '#FFFFFF', accent: '#E8C88C', ice: '#e2596c' },
+    crest: 'wing',
+    skaters: [
+      { n: 19, name: 'S. Yzerman',  short: 'YZERMAN',  pos: 'C', spd: 90, sht: 94, pss: 95, chk: 82, hnd: 96 },
+      { n: 91, name: 'S. Fedorov',  short: 'FEDOROV',  pos: 'C', spd: 96, sht: 92, pss: 92, chk: 84, hnd: 95 },
+      { n: 5,  name: 'N. Lidstrom', short: 'LIDSTROM', pos: 'D', spd: 85, sht: 88, pss: 95, chk: 84, hnd: 92 },
+    ],
+    goalie: { n: 30, name: 'C. Osgood', short: 'OSGOOD', ref: 87, pos: 86, rec: 82 },
+  },
+  {
+    id: 'PIT92', city: 'Pittsburgh', name: 'Back-to-Back', abbr: 'PIT',
+    colors: { primary: '#FCB514', secondary: '#111111', accent: '#FFFFFF', ice: '#f5c95c' },
+    crest: 'penguin',
+    skaters: [
+      { n: 66, name: 'M. Lemieux', short: 'LEMIEUX', pos: 'C', spd: 91, sht: 99, pss: 99, chk: 80, hnd: 99 },
+      { n: 68, name: 'J. Jagr',    short: 'JAGR',    pos: 'W', spd: 90, sht: 96, pss: 93, chk: 90, hnd: 99 },
+      { n: 77, name: 'P. Coffey',  short: 'COFFEY',  pos: 'D', spd: 97, sht: 90, pss: 94, chk: 60, hnd: 92 },
+    ],
+    goalie: { n: 35, name: 'T. Barrasso', short: 'BARRASSO', ref: 88, pos: 83, rec: 79 },
+  },
+  {
+    id: 'BOS72', city: 'Boston', name: 'Big Bad Bruins', abbr: 'BOS',
+    colors: { primary: '#FFB81C', secondary: '#111111', accent: '#FFFFFF', ice: '#f0c65a' },
+    crest: 'spoke',
+    skaters: [
+      { n: 4,  name: 'B. Orr',     short: 'ORR',     pos: 'D', spd: 97, sht: 93, pss: 99, chk: 84, hnd: 99 },
+      { n: 77, name: 'R. Bourque', short: 'BOURQUE', pos: 'D', spd: 88, sht: 95, pss: 94, chk: 88, hnd: 92 },
+      { n: 8,  name: 'C. Neely',   short: 'NEELY',   pos: 'W', spd: 84, sht: 96, pss: 78, chk: 98, hnd: 88 },
+    ],
+    goalie: { n: 30, name: 'G. Cheevers', short: 'CHEEVERS', ref: 89, pos: 85, rec: 80 },
+  },
+  {
+    id: 'CHI92', city: 'Chicago', name: 'Madhouse', abbr: 'CHI',
+    colors: { primary: '#CF0A2C', secondary: '#111111', accent: '#FF671B', ice: '#e04a63' },
+    crest: 'feather',
+    skaters: [
+      { n: 7,  name: 'C. Chelios', short: 'CHELIOS', pos: 'D', spd: 86, sht: 84, pss: 90, chk: 98, hnd: 86 },
+      { n: 27, name: 'J. Roenick', short: 'ROENICK', pos: 'C', spd: 93, sht: 92, pss: 88, chk: 86, hnd: 92 },
+      { n: 18, name: 'D. Savard',  short: 'SAVARD',  pos: 'C', spd: 92, sht: 88, pss: 96, chk: 58, hnd: 98 },
+    ],
+    goalie: { n: 30, name: 'E. Belfour', short: 'BELFOUR', ref: 94, pos: 92, rec: 86 },
+  },
+  {
+    id: 'NJD00', city: 'New Jersey', name: 'The Trap', abbr: 'NJD',
+    colors: { primary: '#CE1126', secondary: '#111111', accent: '#FFFFFF', ice: '#e35367' },
+    crest: 'devil',
+    skaters: [
+      { n: 4,  name: 'S. Stevens',  short: 'STEVENS',  pos: 'D', spd: 84, sht: 82, pss: 82, chk: 99, hnd: 78 },
+      { n: 26, name: 'P. Elias',    short: 'ELIAS',    pos: 'W', spd: 90, sht: 90, pss: 92, chk: 74, hnd: 92 },
+      { n: 22, name: 'C. Lemieux',  short: 'C.LEMIEUX', pos: 'W', spd: 84, sht: 88, pss: 76, chk: 94, hnd: 84 },
+    ],
+    goalie: { n: 30, name: 'M. Brodeur', short: 'BRODEUR', ref: 94, pos: 98, rec: 95 },
+  },
+  {
+    id: 'PHI96', city: 'Philadelphia', name: 'Legion of Doom', abbr: 'PHI',
+    colors: { primary: '#F74902', secondary: '#111111', accent: '#FFFFFF', ice: '#fa7a45' },
+    crest: 'wingp',
+    skaters: [
+      { n: 88, name: 'E. Lindros', short: 'LINDROS', pos: 'C', spd: 88, sht: 96, pss: 90, chk: 99, hnd: 92 },
+      { n: 10, name: 'J. LeClair', short: 'LECLAIR', pos: 'W', spd: 82, sht: 94, pss: 80, chk: 92, hnd: 87 },
+      { n: 2,  name: 'M. Howe',    short: 'HOWE',    pos: 'D', spd: 88, sht: 86, pss: 92, chk: 80, hnd: 90 },
+    ],
+    goalie: { n: 27, name: 'R. Hextall', short: 'HEXTALL', ref: 89, pos: 84, rec: 76 },
+  },
+  {
+    id: 'MTL77', city: 'Montreal', name: 'Flying Frenchmen', abbr: 'MTL',
+    colors: { primary: '#AF1E2D', secondary: '#192168', accent: '#FFFFFF', ice: '#d15865' },
+    crest: 'ch',
+    skaters: [
+      { n: 10, name: 'G. Lafleur',  short: 'LAFLEUR',  pos: 'W', spd: 96, sht: 96, pss: 92, chk: 62, hnd: 97 },
+      { n: 4,  name: 'J. Beliveau', short: 'BELIVEAU', pos: 'C', spd: 87, sht: 94, pss: 95, chk: 86, hnd: 95 },
+      { n: 19, name: 'L. Robinson', short: 'ROBINSON', pos: 'D', spd: 84, sht: 86, pss: 90, chk: 96, hnd: 85 },
+    ],
+    goalie: { n: 29, name: 'K. Dryden', short: 'DRYDEN', ref: 93, pos: 95, rec: 88 },
+  },
+  {
+    id: 'BUF93', city: 'Buffalo', name: 'The Dominator', abbr: 'BUF',
+    colors: { primary: '#003087', secondary: '#FFB81C', accent: '#FFFFFF', ice: '#4a70c9' },
+    crest: 'bison',
+    skaters: [
+      { n: 16, name: 'P. LaFontaine', short: 'LAFONTAINE', pos: 'C', spd: 94, sht: 92, pss: 95, chk: 58, hnd: 96 },
+      { n: 89, name: 'A. Mogilny',    short: 'MOGILNY',    pos: 'W', spd: 97, sht: 95, pss: 86, chk: 60, hnd: 95 },
+      { n: 6,  name: 'P. Housley',    short: 'HOUSLEY',    pos: 'D', spd: 92, sht: 86, pss: 93, chk: 56, hnd: 92 },
+    ],
+    goalie: { n: 39, name: 'D. Hasek', short: 'HASEK', ref: 99, pos: 88, rec: 78 },
+  },
+  {
+    id: 'VAN94', city: 'Vancouver', name: 'Flying Skate', abbr: 'VAN',
+    colors: { primary: '#041C2C', secondary: '#C8102E', accent: '#F0B310', ice: '#3c5f7a' },
+    crest: 'skate',
+    skaters: [
+      { n: 10, name: 'P. Bure',    short: 'BURE',    pos: 'W', spd: 99, sht: 95, pss: 82, chk: 52, hnd: 96 },
+      { n: 19, name: 'M. Naslund', short: 'NASLUND', pos: 'W', spd: 90, sht: 93, pss: 90, chk: 62, hnd: 93 },
+      { n: 16, name: 'T. Linden',  short: 'LINDEN',  pos: 'C', spd: 84, sht: 86, pss: 86, chk: 90, hnd: 86 },
+    ],
+    goalie: { n: 1, name: 'K. McLean', short: 'MCLEAN', ref: 88, pos: 85, rec: 79 },
+  },
+  {
+    id: 'TOR93', city: 'Toronto', name: 'Blue & White', abbr: 'TOR',
+    colors: { primary: '#00205B', secondary: '#FFFFFF', accent: '#7BAFD4', ice: '#5c86c9' },
+    crest: 'leaf',
+    skaters: [
+      { n: 93, name: 'D. Gilmour', short: 'GILMOUR', pos: 'C', spd: 90, sht: 88, pss: 96, chk: 88, hnd: 95 },
+      { n: 13, name: 'M. Sundin',  short: 'SUNDIN',  pos: 'C', spd: 88, sht: 93, pss: 90, chk: 88, hnd: 93 },
+      { n: 21, name: 'B. Salming', short: 'SALMING', pos: 'D', spd: 86, sht: 86, pss: 90, chk: 90, hnd: 88 },
+    ],
+    goalie: { n: 29, name: 'F. Potvin', short: 'POTVIN', ref: 90, pos: 86, rec: 80 },
+  },
+];
+
+/* One flat list; `era` drives the tabs on the team-select screen. */
+TEAMS.forEach((t) => { t.era = 'modern'; });
+LEGEND_TEAMS.forEach((t) => { t.era = 'legend'; TEAMS.push(t); });
+
 /** Overall rating used for the team-select screen bars. */
 function teamRating(t) {
   const s = t.skaters.reduce((a, p) => a + (p.spd + p.sht + p.pss + p.chk + p.hnd) / 5, 0) / 3;

@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Slapshot">
+<meta name="theme-color" content="#04070c">
 <title>SLAPSHOT ARCADE — 3-on-3 Hockey</title>
 <meta name="description" content="An arcade 3-on-3 hockey game: big hits, turbo, on-fire mode and goal replays.">
 <style>
@@ -20,17 +25,25 @@
   * { box-sizing: border-box; }
 
   html, body {
-    margin: 0; padding: 0; height: 100%;
+    margin: 0; padding: 0;
+    height: 100%;
     background: #04070c;
     color: var(--ink);
     font-family: var(--ui);
     overflow: hidden;
+    overscroll-behavior: none;
     -webkit-font-smoothing: antialiased;
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
   }
+  /* dvh keeps the canvas correct while iOS Safari's toolbars slide away */
+  @supports (height: 100dvh) { html, body { height: 100dvh; } }
 
   #stage {
     position: fixed; inset: 0;
     display: grid; place-items: center;
+    touch-action: none;
   }
 
   canvas#game {
@@ -54,6 +67,8 @@
     width: min(1180px, 94vw);
     max-height: 94vh;
     overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
   }
   .screen.active { display: block; animation: rise .3s cubic-bezier(.2,.9,.3,1); }
@@ -164,9 +179,8 @@
     grid-template-columns: 1fr 320px;
     gap: 20px;
   }
-  @media (max-width: 900px) {
+  @media (max-width: 760px) {
     .select-layout { grid-template-columns: 1fr; }
-    #team-detail { order: -1; }
   }
 
   #team-grid {
@@ -201,6 +215,7 @@
     box-shadow: 0 12px 26px rgba(0,0,0,.5), 0 0 0 1px color-mix(in srgb, var(--c1) 60%, transparent);
     outline: none;
   }
+  .tile.armed { border-color: #6fc0ff; box-shadow: 0 0 0 2px #6fc0ff inset, 0 10px 26px rgba(30,120,220,.4); }
   .tile.picked { border-color: #ffd76a; box-shadow: 0 0 0 2px #ffd76a inset; }
   .tile.disabled { opacity: .35; pointer-events: none; }
 
@@ -332,6 +347,208 @@
   #pause .panel { text-align: center; width: min(420px, 86vw); }
   #pause h1 { font-family: var(--display); font-size: 46px; margin: 0 0 18px; letter-spacing: .08em; }
 
+  /* ------------------------------------------------------------- tabs */
+
+  .tabs { display: flex; gap: 8px; margin: -8px 0 16px; flex-wrap: wrap; }
+  .tabs button {
+    padding: 8px 18px; font-size: 15px;
+    background: rgba(255,255,255,.05);
+  }
+  .tabs button.on {
+    background: linear-gradient(180deg,#3aa0ff,#1668d6);
+    border-color: #7fc8ff; color: #fff;
+  }
+  .tile-era {
+    position: absolute; top: 6px; left: 6px;
+    font-size: 7.5px; font-weight: 800; letter-spacing: .1em;
+    background: linear-gradient(180deg,#ffd76a,#e8a020);
+    color: #241400; padding: 1px 5px; border-radius: 4px;
+  }
+
+  /* ---------------------------------------------------- touch controls */
+
+  #touch {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 40;
+    touch-action: none;
+  }
+  #touch.hidden { display: none; }
+
+  /* Left half is a floating-stick surface: press anywhere to place it. */
+  #tc-stick {
+    position: absolute;
+    left: 0; top: 0; bottom: 0; width: 46%;
+    pointer-events: auto;
+    touch-action: none;
+  }
+  #tc-base {
+    position: absolute;
+    width: 116px; height: 116px;
+    margin-left: -58px; margin-top: -58px;
+    border-radius: 50%;
+    border: 2px solid rgba(150,205,255,.35);
+    background: radial-gradient(circle, rgba(20,40,70,.42), rgba(10,20,36,.16) 70%, transparent);
+    opacity: 0; transition: opacity .12s;
+    pointer-events: none;
+  }
+  #tc-base.on { opacity: 1; }
+  #tc-knob {
+    position: absolute; left: 50%; top: 50%;
+    width: 52px; height: 52px;
+    transform: translate(-50%,-50%);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #eaf5ff, #7fb6e8 60%, #3d6f9e);
+    box-shadow: 0 4px 14px rgba(0,0,0,.5), inset 0 -3px 8px rgba(0,0,0,.25);
+  }
+
+  #tc-buttons {
+    position: absolute;
+    right: calc(14px + env(safe-area-inset-right));
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    width: 40vmin; height: 40vmin;
+    min-width: 190px; min-height: 190px;
+    pointer-events: none;
+  }
+  .tbtn {
+    position: absolute;
+    pointer-events: auto;
+    touch-action: none;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.28);
+    color: #fff;
+    font-family: var(--display);
+    letter-spacing: .04em;
+    display: grid; place-items: center;
+    text-shadow: 0 2px 4px rgba(0,0,0,.6);
+    box-shadow: 0 6px 18px rgba(0,0,0,.45), inset 0 -4px 10px rgba(0,0,0,.3);
+    transition: transform .06s, filter .06s;
+    -webkit-user-select: none; user-select: none;
+  }
+  .tbtn.pressed { transform: scale(.9); filter: brightness(1.45); }
+  .t-shoot {
+    right: 0; bottom: 0;
+    width: clamp(72px, 19vmin, 108px); height: clamp(72px, 19vmin, 108px);
+    font-size: clamp(14px, 3.4vmin, 20px);
+    background: radial-gradient(circle at 35% 28%, #ffb04d, #e8590c 62%, #a83a05);
+  }
+  .t-pass {
+    right: clamp(78px, 20.5vmin, 116px); bottom: clamp(16px, 4vmin, 26px);
+    width: clamp(56px, 14.5vmin, 82px); height: clamp(56px, 14.5vmin, 82px);
+    font-size: clamp(11px, 2.7vmin, 16px);
+    background: radial-gradient(circle at 35% 28%, #6fd0ff, #1668d6 62%, #0d3f86);
+  }
+  .t-check {
+    right: clamp(14px, 3.6vmin, 24px); bottom: clamp(78px, 20.5vmin, 116px);
+    width: clamp(56px, 14.5vmin, 82px); height: clamp(56px, 14.5vmin, 82px);
+    font-size: clamp(11px, 2.7vmin, 16px);
+    background: radial-gradient(circle at 35% 28%, #ff8f8f, #c8102e 62%, #7d0a1d);
+  }
+  .t-turbo {
+    right: clamp(86px, 22.5vmin, 128px); bottom: clamp(86px, 22.5vmin, 128px);
+    width: clamp(52px, 13.5vmin, 76px); height: clamp(52px, 13.5vmin, 76px);
+    font-size: clamp(10px, 2.4vmin, 14px);
+    background: radial-gradient(circle at 35% 28%, #c8f5b0, #3d9970 62%, #1f5c42);
+  }
+
+  #tc-pause {
+    position: absolute;
+    left: calc(12px + env(safe-area-inset-left));
+    top: calc(12px + env(safe-area-inset-top));
+    width: 44px; height: 44px;
+    pointer-events: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.22);
+    background: rgba(10,18,30,.62);
+    color: #cfe4ff; font-size: 13px;
+    display: grid; place-items: center;
+  }
+
+  #tc-hint {
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    bottom: calc(30px + env(safe-area-inset-bottom));
+    font-size: 10px; letter-spacing: .1em;
+    color: rgba(190,215,245,.5);
+    white-space: nowrap;
+    pointer-events: none;
+    animation: hintfade 1s ease 8s forwards;
+  }
+  @keyframes hintfade { to { opacity: 0; } }
+
+  /* --------------------------------------------------------- rotate hint */
+
+  #rotate { display: none; }
+  @media (orientation: portrait) and (pointer: coarse) {
+    #rotate {
+      position: fixed; inset: 0; z-index: 200;
+      display: grid; place-items: center; text-align: center;
+      background: #04070c;
+    }
+    #rotate .rot-icon { font-size: 64px; color: var(--cold); animation: spin 2.4s ease-in-out infinite; }
+    #rotate h2 { font-family: var(--display); font-size: 30px; letter-spacing: .08em; margin: 14px 0 6px; }
+    #rotate p { color: var(--dim); font-size: 13px; margin: 0; }
+    @keyframes spin { 0%,100% { transform: rotate(0); } 50% { transform: rotate(90deg); } }
+  }
+
+  /* Bigger tap targets and roomier menus on phones/tablets. */
+  @media (pointer: coarse) {
+    .screen button { min-height: 46px; }
+    .tile { padding: 12px 6px 10px; }
+    .seg button, .tabs button { padding: 12px 18px; }
+    .row-btns button { padding: 13px 22px; }
+  }
+
+  /* ------------------------------------------------ short screens (phones
+     in landscape): everything tightens up so the grid stays on screen. */
+  @media (max-height: 520px) {
+    .screen { max-height: 97vh; width: min(1180px, 97vw); }
+    .panel { padding: 12px 14px; border-radius: 12px; }
+    h1.sec { font-size: 22px; }
+    .sub { font-size: 10px; margin-bottom: 10px; }
+    .tabs { margin: -4px 0 10px; }
+    .tabs button { padding: 7px 14px; font-size: 13px; }
+
+    .logo .l1 { font-size: clamp(38px, 8vw, 74px); }
+    .logo .l2 { font-size: clamp(18px, 3.6vw, 32px); }
+    .tagline { margin: 8px 0 12px; font-size: 10px; letter-spacing: .26em; }
+    .menu { gap: 8px; }
+    button.big { padding: 10px 18px; font-size: 20px; width: min(320px, 70vw); }
+    .foot { margin-top: 12px; font-size: 9px; }
+
+    .select-layout { grid-template-columns: 1fr 240px; gap: 12px; }
+    #team-grid { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 7px; }
+    .tile { padding: 7px 4px 6px; border-radius: 9px; }
+    .tile canvas { width: 36px; height: 36px; }
+    .tile-label b { font-size: 14px; }
+    .tile-label span { font-size: 7.5px; }
+    .tile-ovr { font-size: 11px; top: 4px; right: 5px; }
+    .tile-era { font-size: 6px; top: 4px; left: 4px; }
+
+    #team-detail { padding: 10px; }
+    .detail-head { padding-bottom: 8px; margin-bottom: 8px; gap: 8px; }
+    .detail-crest { width: 44px; height: 44px; }
+    .detail-head h2 { font-size: 19px; }
+    .detail-head h3 { font-size: 9px; }
+    .ovr-pill { font-size: 11px; }
+    .bar-row { font-size: 8.5px; margin: 3px 0; grid-template-columns: 50px 1fr 22px; }
+    .roster { margin-top: 8px; gap: 3px; }
+    .pl { font-size: 10.5px; padding: 3px 6px; }
+
+    .opt-row { padding: 8px 0; grid-template-columns: 130px 1fr; }
+    .seg button, .tabs button { padding: 8px 13px; font-size: 13px; }
+    .ctrl-grid { gap: 12px; }
+    .krow { padding: 4px 0; font-size: 11px; }
+    .tips { font-size: 11px; line-height: 1.5; }
+    .row-btns button { padding: 9px 16px; font-size: 16px; }
+    .row-btns .big { font-size: 17px; }
+    .final-line { gap: 14px; margin: 2px 0 6px; }
+    .fabbr { font-size: 26px; } .fscore { font-size: 40px; }
+    .star { padding: 6px 10px; }
+    #pause h1 { font-size: 30px; margin-bottom: 10px; }
+  }
+
+  .legal.hidden { display: none; }
   .legal {
     position: fixed; bottom: 6px; left: 0; right: 0;
     text-align: center; font-size: 9.5px; letter-spacing: .1em;
@@ -369,11 +586,17 @@
     <div class="panel">
       <h1 class="sec">TEAM SELECT</h1>
       <p class="sub" id="select-prompt">CHOOSE <b>YOUR</b> CLUB</p>
+      <div class="tabs" id="era-tabs">
+        <button data-era="all" class="on">ALL</button>
+        <button data-era="modern">MODERN</button>
+        <button data-era="legend">LEGENDS</button>
+      </div>
       <div class="select-layout">
         <div id="team-grid"></div>
         <div id="team-detail"></div>
       </div>
       <div class="row-btns" style="margin-top:18px">
+        <button class="big primary" id="btn-confirm-team" style="width:auto">CONFIRM</button>
         <button id="btn-back-title3">BACK</button>
       </div>
     </div>
@@ -432,7 +655,17 @@
 
       <div class="ctrl-grid">
         <div>
-          <h4>PLAYER 1 — KEYBOARD</h4>
+          <h4>TOUCH — iPHONE &amp; iPAD</h4>
+          <div class="krow"><span>Left half of the screen</span><span>Drag anywhere to skate — the stick appears under your thumb</span></div>
+          <div class="krow"><span><kbd>SHOOT</kbd></span><span>Tap to snap it, hold to load a slapper</span></div>
+          <div class="krow"><span><kbd>PASS</kbd></span><span>Pass / switch player</span></div>
+          <div class="krow"><span><kbd>HIT</kbd></span><span>Body check · spin move with the puck</span></div>
+          <div class="krow"><span><kbd>TURBO</kbd></span><span>Hold while steering</span></div>
+          <div class="krow"><span><kbd>❙❙</kbd> top-left</span><span>Pause</span></div>
+          <p class="tips" style="margin-top:10px">Play in landscape. For a full-screen game with no
+          browser chrome, tap <b>Share → Add to Home Screen</b> and launch it from the icon.</p>
+
+          <h4 style="margin-top:20px">PLAYER 1 — KEYBOARD</h4>
           <div class="krow"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd></span><span>Skate</span></div>
           <div class="krow"><span><kbd>Shift</kbd></span><span>Turbo (hold)</span></div>
           <div class="krow"><span><kbd>J</kbd> / <kbd>Space</kbd></span><span>Shoot — hold to load a slapper</span></div>
@@ -505,6 +738,28 @@
       <button class="big" id="btn-restart">RESTART GAME</button>
       <button class="big" id="btn-abandon">QUIT TO MENU</button>
     </div>
+  </div>
+</div>
+
+<!-- ------------------------------------------------------ TOUCH CONTROLS -->
+<div id="touch" class="hidden">
+  <div id="tc-stick"></div>
+  <div id="tc-base"><div id="tc-knob"></div></div>
+  <div id="tc-buttons">
+    <button class="tbtn t-turbo" data-act="turbo"><span>TURBO</span></button>
+    <button class="tbtn t-check" data-act="check"><span>HIT</span></button>
+    <button class="tbtn t-pass"  data-act="pass"><span>PASS</span></button>
+    <button class="tbtn t-shoot" data-act="shoot"><span>SHOOT</span></button>
+  </div>
+  <button id="tc-pause" aria-label="Pause">❙❙</button>
+  <div id="tc-hint">Drag anywhere on the left to skate · hold SHOOT to load a slapper</div>
+</div>
+
+<div id="rotate">
+  <div>
+    <div class="rot-icon">⟳</div>
+    <h2>ROTATE YOUR DEVICE</h2>
+    <p>Slapshot plays in landscape.</p>
   </div>
 </div>
 

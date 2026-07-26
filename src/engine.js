@@ -39,6 +39,22 @@ function rgba(hex, a) {
   const [r, g, b] = hexToRgb(hex);
   return `rgba(${r},${g},${b},${a})`;
 }
+/** Perceived brightness, 0..1. */
+function lum(hex) {
+  const [r, g, b] = hexToRgb(hex);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+}
+
+/** First candidate that is far enough in value from `base`, else a
+ *  value-shifted version of base. Keeps every club's kit self-legible. */
+function contrastPick(base, candidates, minDelta = 0.2) {
+  const lb = lum(base);
+  for (const c of candidates) {
+    if (c && Math.abs(lum(c) - lb) >= minDelta) return c;
+  }
+  return lb > 0.5 ? shade(base, -0.55) : shade(base, 0.45);
+}
+
 /** Pick black or white text for legibility on a colour. */
 function contrastInk(hex) {
   const [r, g, b] = hexToRgb(hex);
@@ -252,6 +268,123 @@ const KEYMAPS = [
 /** Single-player also accepts the arrow keys for movement. */
 const P1_ALT_MOVE = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' };
 
+/* ------------------------------------------------------- touch controls */
+
+/** Coarse pointer + no hover => phone/tablet. Drives the on-screen pad. */
+const IS_TOUCH = typeof matchMedia === 'function' &&
+  matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+/**
+ * On-screen pad: a floating thumbstick on the left, action buttons on the
+ * right. Uses Pointer Events so multi-touch (steer + shoot + turbo at the
+ * same time) behaves the way a controller would.
+ */
+class TouchControls {
+  constructor() {
+    this.active = false;
+    this.x = 0; this.y = 0; this.mag = 0;
+    this.held = new Set();
+    this.hits = new Set();
+    this.stickId = null;
+    this.buttonIds = new Map();      // pointerId -> action
+    this.radius = 58;
+  }
+
+  mount() {
+    this.root = document.getElementById('touch');
+    this.zone = document.getElementById('tc-stick');
+    this.base = document.getElementById('tc-base');
+    this.knob = document.getElementById('tc-knob');
+    if (!this.root) return;
+
+    // Pointer capture is best-effort: if it throws we still want the input.
+    const capture = (el, id) => { try { el.setPointerCapture(id); } catch (err) { /* ignore */ } };
+
+    this.zone.addEventListener('pointerdown', (e) => {
+      if (this.stickId !== null) return;
+      this.stickId = e.pointerId;
+      capture(this.zone, e.pointerId);
+      this.origin = { x: e.clientX, y: e.clientY };
+      this.radius = Math.max(44, Math.min(74, window.innerHeight * 0.13));
+      this.base.style.width = this.base.style.height = `${this.radius * 2}px`;
+      this.base.style.left = `${e.clientX}px`;
+      this.base.style.top = `${e.clientY}px`;
+      this.base.classList.add('on');
+      this._move(e);
+      e.preventDefault();
+    });
+
+    const move = (e) => {
+      if (e.pointerId !== this.stickId) return;
+      this._move(e);
+      e.preventDefault();
+    };
+    this.zone.addEventListener('pointermove', move);
+
+    const end = (e) => {
+      if (e.pointerId !== this.stickId) return;
+      this.stickId = null;
+      this.x = this.y = this.mag = 0;
+      this.base.classList.remove('on');
+      this.knob.style.transform = 'translate(-50%,-50%)';
+    };
+    this.zone.addEventListener('pointerup', end);
+    this.zone.addEventListener('pointercancel', end);
+
+    for (const btn of this.root.querySelectorAll('[data-act]')) {
+      const act = btn.dataset.act;
+      btn.addEventListener('pointerdown', (e) => {
+        capture(btn, e.pointerId);
+        this.buttonIds.set(e.pointerId, act);
+        this.held.add(act);
+        this.hits.add(act);
+        btn.classList.add('pressed');
+        e.preventDefault();
+      });
+      const release = (e) => {
+        if (this.buttonIds.get(e.pointerId) !== act) return;
+        this.buttonIds.delete(e.pointerId);
+        this.held.delete(act);
+        btn.classList.remove('pressed');
+      };
+      btn.addEventListener('pointerup', release);
+      btn.addEventListener('pointercancel', release);
+    }
+  }
+
+  _move(e) {
+    let dx = e.clientX - this.origin.x;
+    let dy = e.clientY - this.origin.y;
+    const d = Math.hypot(dx, dy);
+    const r = this.radius;
+    if (d > r) { dx = dx / d * r; dy = dy / d * r; }
+    // Small dead zone so resting a thumb doesn't drift the skater.
+    const mag = Math.min(1, d / (r * 0.82));
+    if (mag < 0.16) { this.x = this.y = this.mag = 0; }
+    else {
+      const n = Math.hypot(dx, dy) || 1;
+      this.x = dx / n; this.y = dy / n; this.mag = mag;
+    }
+    this.knob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+  }
+
+  /** Show/hide the pad. */
+  setVisible(v) {
+    this.active = v;
+    if (this.root) this.root.classList.toggle('hidden', !v);
+    if (!v) {
+      this.held.clear(); this.hits.clear();
+      this.stickId = null; this.x = this.y = this.mag = 0;
+      if (this.base) this.base.classList.remove('on');
+      for (const b of this.root ? this.root.querySelectorAll('[data-act]') : []) b.classList.remove('pressed');
+    }
+  }
+
+  endFrame() { this.hits.clear(); }
+}
+
+const TOUCH = new TouchControls();
+
 class Input {
   constructor() {
     this.keys = new Set();     // currently held
@@ -277,6 +410,7 @@ class Input {
 
   endFrame() {
     this.hits.clear();
+    TOUCH.endFrame();
     this.anyPressed = false;
     const pads = this.pads();
     for (let i = 0; i < 2; i++) {
@@ -328,6 +462,15 @@ class Input {
       pass = pass || hit(2) || hit(3);
       check = check || hit(1);
       turbo = turbo || dn(5) || dn(7) || (pad.buttons[7] && pad.buttons[7].value > 0.35);
+    }
+
+    if (slot === 0 && TOUCH.active) {
+      if (TOUCH.mag > 0) { x = TOUCH.x * TOUCH.mag; y = TOUCH.y * TOUCH.mag; }
+      shoot = shoot || TOUCH.held.has('shoot');
+      shootHit = shootHit || TOUCH.hits.has('shoot');
+      pass = pass || TOUCH.hits.has('pass');
+      check = check || TOUCH.hits.has('check');
+      turbo = turbo || TOUCH.held.has('turbo');
     }
 
     const mag = Math.hypot(x, y);

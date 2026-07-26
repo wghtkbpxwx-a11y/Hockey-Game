@@ -2,8 +2,10 @@
 
 A 3-on-3 arcade hockey game in the spirit of *NHL Hitz* and *NHL '94*: no
 offsides, no icing, no penalties — just speed, big hits, one-timers and
-flaming skaters. 16 clubs, real NHL stars, everything rendered and
-synthesised in code.
+flaming skaters. **30 clubs** — 16 modern and 14 all-time legends squads —
+with everything rendered and synthesised in code.
+
+Plays with a keyboard, a gamepad, or your thumbs on an iPhone.
 
 **Play it:** open `index.html` in any modern browser. No build step, no
 install, no network — it runs straight off the filesystem.
@@ -23,6 +25,25 @@ If you'd rather serve it: `npx http-server -p 8080` then visit
 You always control the skater with the ring under his feet — it switches
 automatically to whoever is closest to the puck.
 
+### iPhone / iPad
+
+Hold the phone in landscape. An on-screen pad appears when a game starts.
+
+| Touch | Action |
+| --- | --- |
+| Drag anywhere on the **left half** | Skate — the stick appears under your thumb wherever you press |
+| **SHOOT** | Tap to snap it, hold to load a slapper |
+| **PASS** | Pass / switch player |
+| **HIT** | Body check · spin move when you have the puck |
+| **TURBO** | Hold while steering |
+| **❙❙** (top-left) | Pause |
+
+Multi-touch is handled per-pointer, so steering, holding turbo and charging
+a shot all work at the same time. For a full-screen game with no browser
+chrome, use **Share → Add to Home Screen** and launch from the icon.
+
+### Keyboard
+
 | Player 1 | Action |
 | --- | --- |
 | `W` `A` `S` `D` or arrow keys | Skate |
@@ -35,8 +56,10 @@ automatically to whoever is closest to the puck.
 Player 2 (local versus): arrows to skate, `.` shoot, `,` pass, `/` check,
 right `Shift` turbo.
 
-Gamepads work too: left stick to skate, **A** shoot, **X**/**Y** pass,
-**B** check, **RB**/**RT** turbo.
+### Gamepad
+
+Left stick to skate, **A** shoot, **X**/**Y** pass, **B** check,
+**RB**/**RT** turbo.
 
 ## How to win ugly
 
@@ -57,12 +80,35 @@ Gamepads work too: left stick to skate, **A** shoot, **X**/**Y** pass,
 Difficulty runs Rookie → Pro → All-Star → Legend, which moves AI reaction
 time, shooting accuracy, aggression and goaltending together.
 
+## Legends
+
+A second era of clubs sits behind the **LEGENDS** tab in team select, rated
+on peak form — which is exactly why a 1984 roster can run with anybody:
+
+> Gretzky · Messier · Kurri · Fuhr — Lemieux · Jagr · Coffey — Orr · Bourque ·
+> Neely — **Pronger · MacInnis · Hull** — **Forsberg** · Sakic · Roy —
+> **Kariya** · Selanne · Niedermayer — Yzerman · Fedorov · Lidstrom —
+> Chelios · Roenick · Savard · Belfour — Stevens · Brodeur — Lindros ·
+> LeClair — Lafleur · Béliveau · Dryden — LaFontaine · Mogilny · Hasek —
+> Bure · Naslund — Gilmour · Sundin · Salming
+
+MacInnis has a 99 shot and Hasek a 99 glove, and it shows. Mix eras freely:
+the **ALL** tab lets you put the '84 Oilers in against the current Panthers.
+
 ## What's in it
 
-- **16 clubs, 3 skaters + a goaltender each**, rated for speed, shot,
+- **30 clubs, 3 skaters + a goaltender each**, rated for speed, shot,
   passing, checking and stickhandling. McDavid really is a 99 for speed;
   Hellebuyck really is a wall.
-- **Home colours vs away whites**, so two red teams never blur together.
+- **Home colours vs away whites**, plus a contrast-aware kit builder that
+  picks helmet and pants values guaranteed to separate from the sweater — so
+  no club renders as one undifferentiated blob.
+- **Skaters drawn as skaters**: boots with steel and blades that splay on the
+  push leg, two hands on the stick, shoulder pads, ear cups and a cage, plus
+  lighting fixed in world space so the highlight stays overhead as they turn.
+- **A proper cage and crease**: rounded back frame with woven twine and a
+  base skirt, and a regulation crease — straight sides off the goal line into
+  the 6-foot arc, with hash marks.
 - **A regulation 200′ × 85′ sheet** with correct blue lines, faceoff dots
   and hash marks, creases and trapezoids, drawn to scale.
 - **Goal replays.** The last ~2.5 seconds are recorded every frame and
@@ -79,8 +125,8 @@ time, shooting accuracy, aggression and goaltending together.
 
 ```
 index.html        shell, menus, styling
-src/roster.js     the 16 clubs and their players
-src/engine.js     math, camera, particles, input (keyboard + gamepad)
+src/roster.js     the 30 clubs (modern + legends) and their players
+src/engine.js     math, camera, particles, input (keyboard, gamepad, touch)
 src/audio.js      runtime sound synthesis
 src/match.js      simulation: skating, puck, goalies, AI, rules
 src/render.js     arena, ice, skaters, nets, effects
@@ -89,6 +135,9 @@ src/main.js       screens, camera work, HUD, game loop
 
 The simulation runs on a fixed 60 Hz timestep independent of the render
 rate, so the physics behave the same on a 60 Hz laptop and a 144 Hz monitor.
+The logical canvas resizes to match the display's aspect and shrinks on small
+screens, so HUD text stays legible on a phone while the camera still shows
+exactly the same slice of ice on every device.
 The arena — stands, crowd, boards, painted ice — is baked once into an
 offscreen canvas at team-select time; only the living parts are redrawn.
 
